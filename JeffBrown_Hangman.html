@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Jeff Browns Hangman Game</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+
+  </head>
+  <body>
+  <body>
+
+<!--
+ *Wins: (# of times user guessed the word correctly).
+ *If the word is madonna, display it like this when the game starts: _ _ _ _ _ _ _.
+ *As the user guesses the correct letters, reveal them: m a d o _ _ a.
+ *Number of Guesses Remaining: (# of guesses remaining for the user).
+ *Letters Already Guessed: (Letters the user has guessed, displayed like L Z Y H).
+ *After the user wins/loses the game should automatically choose another word and make the user play it.
+ -->
+
+    <!--pseudo-code Choose any subject for your theme, though, so be creative! -->
+    <div class="container">
+      <div class="row">
+        <div class="col-md-offset-2 col-md-8">
+          <div class="jumbotron">
+            <h2>Jeff Brown's Hangman Game</h2><br><h1>Famous Kentuckians</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+	<!-- pseudo-code Display the following on the page: -->
+	<!-- initially display press any key, then change to word when game state is active -->
+    <div class="container">
+      <div class="row">
+        <div class="col-md-offset-2 col-md-8">
+          <div class="jumbotron">
+            <h2 id="puzzle-state-text">Press any key to get started.</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-offset-2 col-md-8">
+            <h2 id="tries-remaining-text">You'll get twelve tries to solve each puzzle.</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-offset-2 col-md-8">
+            <h2 id="used-letters-remaining-text">Letters not within the puzzle will display here.</h2>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- We have to put this at the end of our document to ensure the user-text
+         span exists when we try to access it. -->
+    <script type="text/javascript">
+      // Let's start by grabbing a reference to the <span> below.
+      var gameState = "Not Started"
+      var puzzleDisplaytext = document.getElementById("puzzle-state-text");
+
+
+      // imported from the bands html -->
+      var famoKyians = ["j", "e", "n", "n", "i", "f", "e", "r"];
+      var userGuess = "";
+      var arrayIndex = -1;
+      // Converts the user's answer to lowercase.
+      var userGuessLower = "";
+      // Now we check the myBands array to see if it contains the user's answer.
+      // If the user's band is not in the array...
+
+      // pseudo-code -- Use key events to listen for the letters that your players will type.
+      document.onkeyup = function(event) {
+
+      	if (gameState === "Not Started") {
+      		console.log("82-85 Fired");
+          gameState = "MidGame";
+		  puzzleDisplaytext.textContent = "Guess a letter now, we'll see if its in the puzzle.";
+        } else {
+        	console.log("87 Fired");
+        	userGuess = event.key;
+        	userGuessLower = userGuess.toLowerCase();
+            puzzleDisplaytext.textContent = event.key;
+        	arrayIndex = famoKyians.indexOf(userGuessLower);
+            if (arrayIndex === -1) {
+	            alert("index is negative one");
+	        } else {
+	            alert("index is " + arrayIndex);
+	        }
+	     }
+      }
+    </script>
+  </body>
+</html>
