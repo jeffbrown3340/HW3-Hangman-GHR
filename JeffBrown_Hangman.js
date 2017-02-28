@@ -1,19 +1,36 @@
-var gameState = "Not Started"
+// declare game variables and initialize
+var gameState = "pregame"
 var puzzleDisplaytext = document.getElementById("puzzle-state-text");
-var puzzleSolution = ["j", "e", "n", "n", "i", "f", "e", "r"];
+var puzzleSolution = ["j", "e", "n", "n", "i", "f", "e", "r", " ", "l", "a", "w", "r", "e", "n", "c", "e"];
 var puzzleState = [];
-var userGuess = "";
+var userInput = "";
+var userTries = 0;
+var userTriesAllowed = 12;
+
 document.onkeyup = function(event) {
-  if (gameState === "Not Started") {
-    gameState = "MidGame";
+  userInput = event.key;
+  gameHandler(userInput);
+}
+
+function gameHandler(input) {
+  if (gameState === "pregame") {
+    gameState = "midgame";
     puzzleState = initState(puzzleSolution);
-    puzzleDisplaytext.textContent = "Guess a letter now, we'll see if its in the puzzle.";
-  } else {
-    userGuess = event.key;
-    userGuess = userGuess.toLowerCase();
-    puzzleState = puzzleHandler(puzzleSolution, puzzleState, userGuess);
-    puzzleDisplaytext.textContent = writePuzDisTxt(puzzleSolution, puzzleState);
+    puzzleDisplaytext.textContent = "Guess a letter now, we'll see if it's in the puzzle.";
+  } else if (gameState === "midgame") {
+    input = input.toLowerCase();
+    if (checkInputAZ(input)) {
+      puzzleState = puzzleHandler(puzzleSolution, puzzleState, input);
+      puzzleDisplaytext.textContent = writePuzDisTxt(puzzleSolution, puzzleState);
+    }
   }
+}
+
+function checkInputAZ(input) {
+  if (input >= "a" && input <= "z") {
+    return true;
+  }
+
 }
 
 function initState(solution) {
