@@ -1,11 +1,8 @@
-var arrayIndex = -1;
-var famoKyians = [];
 var gameState = "Not Started"
 var puzzleDisplaytext = document.getElementById("puzzle-state-text");
 var puzzleSolution = ["j", "e", "n", "n", "i", "f", "e", "r"];
 var puzzleState = [];
 var userGuess = "";
-var userGuessLower = "";
 document.onkeyup = function(event) {
   if (gameState === "Not Started") {
     gameState = "MidGame";
@@ -13,27 +10,22 @@ document.onkeyup = function(event) {
     puzzleDisplaytext.textContent = "Guess a letter now, we'll see if its in the puzzle.";
   } else {
     userGuess = event.key;
-    userGuessLower = userGuess.toLowerCase();
-    puzzleState = puzzleHandler(puzzleSolution, puzzleState, userGuessLower);
+    userGuess = userGuess.toLowerCase();
+    puzzleState = puzzleHandler(puzzleSolution, puzzleState, userGuess);
     puzzleDisplaytext.textContent = writePuzDisTxt(puzzleSolution, puzzleState);
-    arrayIndex = famoKyians.indexOf(userGuessLower);
-    if (arrayIndex === -1) {
-      console.log("index is negative one");
-    } else {
-      console.log("index is " + arrayIndex);
-    }
   }
 }
 
 function initState(solution) {
+  // initialize state with false, length of solution
   tbufState = [];
   for (i = 0; i < solution.length; i++) {tbufState.push(false)}
   return tbufState;
 }
 
 function writePuzDisTxt(solution, state) {
+    // return text representation of current puzzle state
     var tempBuffer = "";
-    console.log("36 state.length = " + state.length);
     for (i = 0; i < solution.length; i++) {
       if (state[i]) {
         tempBuffer = tempBuffer + solution[i] +" ";
