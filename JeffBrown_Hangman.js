@@ -1,17 +1,46 @@
+// 3/4/17 3:06 AM -- next steps, key validation, ignore already selected keys
+// (ie don't charge the user with a keypress)
+
+
 // declare game variables and initialize
+var dataKyans = [
+  {"name":"Jennifer Lawrence", "hint":'Actress - Katness in "The Hunger Games"'},
+  {"name":"Ashley Judd", "hint":'Actress - "Kiss the Girls" and "Double Jeopardy"'},
+  {"name":"George Clooney", "hint":'Actor: Oceans Eleven lead'},
+  {"name":"Johnny Depp", "hint":'Actor - Captain Jack Sparrow'},
+  {"name":"Mitch McConnell", "hint":'US Senate Majority Leader'},
+  {"name":"Mohammed Ali", "hint":'Athlete - aka "The Greatest", Cassius Clay'},
+  {"name":"Secretariat", "hint":'Triple Crown winner 1973, retired to stud at Claiborne Farm'},
+  {"name":"Jim Bowie", "hint":'Hero of the Alamo, inventor of the Bowie Knife'},
+  {"name":"Duncan Hines", "hint":'restaurant guide publisher, best known for cake mixes'},
+  {"name":"Hunter S Thompson", "hint":'Founder of Gonzo Journalism'},
+  {"name":"Diane Sawyer", "hint":'ABC Good Morning America host, television journalist'},
+  {"name":"Abraham Lincoln", "hint":'Sixteenth US President, his visage is on the penny'},
+  {"name":"Pat Riley", "hint":'Miami Heat former Head Coach and current Team President'}]
 var gameState = "pregame"
 var myNBSP = String.fromCharCode(160);
-var puzzleDisplaytext = document.getElementById("puzzle-state-text");
-var puzzleStatustext = document.getElementById("puzzle-status-text");
-var puzzleSolution = ["j", "e", "n", "n", "i", "f", "e", "r", " ", "l", "a", "w", "r", "e", "n", "c", "e"];
+var priorGuesses = "";
+var puzzleHintText = document.getElementById("puzzle-hint-text");
+var puzzleDisplayText = document.getElementById("puzzle-state-text");
+var puzzleStatusText = document.getElementById("puzzle-status-text");
+var triesRemainingText = document.getElementById("tries-remaining-text");
+var priorGuessesText = document.getElementById("prior-guesses-text");
 var puzzleState = [];
 var userInput = "";
-var userTries = 0;
-var userTriesAllowed = 12;
+var userTries = 12;
+var currSolution;
 
 document.onkeyup = function(event) {
   userInput = event.key;
   gameHandler(userInput);
+}
+
+function stringToArray(solutionString) {
+  var tempBuff0 = [];
+  for (i = 0; i < solutionString.length; i++) {
+    tempBuff0.push(solutionString.charAt(i).toLowerCase());
+  }
+  return tempBuff0;
 }
 
 function isWinner(solution, state) {
@@ -35,19 +64,32 @@ function solutionFormatter(solution) {
 function gameHandler(input) {
   if (gameState === "pregame") {
       gameState = "midgame";
+      currSolution = dataKyans[Math.floor(Math.random() * dataKyans.length)]
+      puzzleSolution = stringToArray(currSolution.name);
       puzzleSolution = solutionFormatter(puzzleSolution);
       puzzleState = initState(puzzleSolution);
-      puzzleStatustext.textContent = writePuzDisTxt(puzzleSolution, puzzleState);
-      puzzleDisplaytext.textContent = "Start guessing letters now, we'll see if they're in the puzzle.";
+      puzzleHintText.textContent = currSolution.hint;
+      puzzleStatusText.textContent = writePuzDisTxt(puzzleSolution, puzzleState);
+      puzzleDisplayText.textContent = "Start guessing letters now, we'll see if they're in the puzzle.";
   } else if (gameState === "midgame") {
       input = input.toLowerCase();
       if (checkInputAZ(input)) {
-        puzzleState = puzzleHandler(puzzleSolution, puzzleState, input);
-        puzzleStatustext.textContent = writePuzDisTxt(puzzleSolution, puzzleState);
-        if (isWinner(puzzleSolution, puzzleState)) {
-          puzzleDisplaytext.textContent = "Winner! Great job!";
+        // alert(priorGuesses.indexOf(input));
+        puzzleState = attemptHandler(puzzleSolution, puzzleState, input);
+        puzzleStatusText.textContent = writePuzDisTxt(puzzleSolution, puzzleState);
+        if (userTries <= 0) {
+          puzzleStatusText.textContent = "Oops, you've run out of tries ... Game over.";
+          puzzleDisplayText.textContent = "Correct answer = " + currSolution.name;
+          triesRemainingText.textContent = "Tries remaining = " + userTries
         } else {
-          puzzleDisplaytext.textContent = "Keep guessing ...";
+          if (isWinner(puzzleSolution, puzzleState)) {
+            puzzleDisplayText.textContent = "Winner! Great job!";
+            puzzleStatusText.textContent = currSolution.name;
+          } else {
+            puzzleDisplayText.textContent = "Keep guessing ...";
+            triesRemainingText.textContent = "Tries remaining = " + userTries
+            priorGuessesText.textContent = "Already guessed = " + priorGuesses;
+          }
         }
       }
   }
@@ -56,8 +98,9 @@ function gameHandler(input) {
 function checkInputAZ(input) {
   if (input >= "a" && input <= "z") {
     return true;
+  } else {
+    return false;
   }
-
 }
 
 function initState(solution) {
@@ -87,15 +130,23 @@ function writePuzDisTxt(solution, state) {
     return tempBuffer;
 }
 
-function puzzleHandler(solution, state, guess) {
+function attemptHandler(solution, state, guess) {
   // returns state of puzzle after choice
   // array of booleans equal length of solution
   // true if a letter has been matched, false if not
   // if passed state is empty, initialize all false length of solution
+  var guessSuccess = false;
   for (i = 0; i < solution.length; i++) {
     if (solution[i] === guess) {
-      state[i] = true;
-    } 
+      if (state[i] === false) {
+        state[i] = true;
+        guessSuccess = true;
+      }
+    }
+  }
+  if (guessSuccess === false) {
+    userTries--;
+    priorGuesses = priorGuesses + myNBSP + guess + ",";
   }
   return state;
 }
