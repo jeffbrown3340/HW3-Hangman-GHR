@@ -22,7 +22,9 @@ var puzzleState = [];
 var puzzleStatusText = document.getElementById("puzzle-status-text");
 var triesRemainingText = document.getElementById("tries-remaining-text");
 var userInput = "";
+var userLosses = 0;
 var userTries = 12;
+var userWins = 0;
 var currSolution;
 
 document.onkeyup = function(event) {
@@ -88,13 +90,16 @@ function gameHandler(input) {
         if (userTries <= 0) {
           puzzleStatusText.textContent = "Oops, you've run out of tries ... Game over.";
           puzzleDisplayText.textContent = "Correct answer = " + currSolution.name;
-          triesRemainingText.textContent = "Tries remaining = " + userTries
+          userLosses++;
+          triesRemainingText.textContent = "Wins = " + userWins + ", Losses = " + userLosses;
           priorGuessesText.textContent = "Hit the spacebar to play again";
           gameState = "pregame"
         } else {
           if (isWinner(puzzleSolution, puzzleState)) {
             puzzleDisplayText.textContent = "Winner! Great job!";
             puzzleStatusText.textContent = currSolution.name;
+            userWins++;
+            triesRemainingText.textContent = "Wins = " + userWins + ", Losses = " + userLosses;
             priorGuessesText.textContent = "Hit the spacebar to play again";
             gameState = "pregame"
           } else {
