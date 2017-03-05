@@ -1,12 +1,7 @@
-// 3/4/17 3:06 AM -- next steps, key validation, ignore already selected keys
-// (ie don't charge the user with a keypress)
-
-
-// declare game variables and initialize
 var dataKyans = [
   {"name":"Jennifer Lawrence", "hint":'Actress - Katness in "The Hunger Games"'},
   {"name":"Ashley Judd", "hint":'Actress - "Kiss the Girls" and "Double Jeopardy"'},
-  {"name":"George Clooney", "hint":'Actor: Oceans Eleven lead'},
+  {"name":"George Clooney", "hint":'Actor - Oceans Eleven and Gravity'},
   {"name":"Johnny Depp", "hint":'Actor - Captain Jack Sparrow'},
   {"name":"Mitch McConnell", "hint":'US Senate Majority Leader'},
   {"name":"Mohammed Ali", "hint":'Athlete - aka "The Greatest", Cassius Clay'},
@@ -17,22 +12,33 @@ var dataKyans = [
   {"name":"Diane Sawyer", "hint":'ABC Good Morning America host, television journalist'},
   {"name":"Abraham Lincoln", "hint":'Sixteenth US President, his visage is on the penny'},
   {"name":"Pat Riley", "hint":'Miami Heat former Head Coach and current Team President'}]
-var gameState = "pregame"
+var gameState = "pregame";
 var myNBSP = String.fromCharCode(160);
 var priorGuesses = "";
+var priorGuessesText = document.getElementById("prior-guesses-text");
 var puzzleHintText = document.getElementById("puzzle-hint-text");
 var puzzleDisplayText = document.getElementById("puzzle-state-text");
+var puzzleState = [];
 var puzzleStatusText = document.getElementById("puzzle-status-text");
 var triesRemainingText = document.getElementById("tries-remaining-text");
-var priorGuessesText = document.getElementById("prior-guesses-text");
-var puzzleState = [];
 var userInput = "";
 var userTries = 12;
 var currSolution;
 
 document.onkeyup = function(event) {
-  userInput = event.key;
-  gameHandler(userInput);
+  var userInputKeyCode = event.keyCode;
+  if (userInputKeyCode != 32 && (userInputKeyCode < 65 || userInputKeyCode > 90)) {return}
+  if (userInputKeyCode === 32) {
+    gameState = "pregame";
+    priorGuesses = "";
+    userTries = 12;
+    gameHandler(userInput);
+  } else {
+    userInput = String.fromCharCode(userInputKeyCode).toLowerCase();
+    if (priorGuesses.length > 0 && priorGuesses.indexOf(userInput) >= 0) {return};
+    if (userTries <= 0) {return}
+    gameHandler(userInput);
+  }
 }
 
 function stringToArray(solutionString) {
@@ -71,6 +77,8 @@ function gameHandler(input) {
       puzzleHintText.textContent = currSolution.hint;
       puzzleStatusText.textContent = writePuzDisTxt(puzzleSolution, puzzleState);
       puzzleDisplayText.textContent = "Start guessing letters now, we'll see if they're in the puzzle.";
+      userTries = 12;
+      triesRemainingText.textContent = "Tries remaining = " + userTries
   } else if (gameState === "midgame") {
       input = input.toLowerCase();
       if (checkInputAZ(input)) {
@@ -81,14 +89,18 @@ function gameHandler(input) {
           puzzleStatusText.textContent = "Oops, you've run out of tries ... Game over.";
           puzzleDisplayText.textContent = "Correct answer = " + currSolution.name;
           triesRemainingText.textContent = "Tries remaining = " + userTries
+          priorGuessesText.textContent = "Hit the spacebar to play again";
+          gameState = "pregame"
         } else {
           if (isWinner(puzzleSolution, puzzleState)) {
             puzzleDisplayText.textContent = "Winner! Great job!";
             puzzleStatusText.textContent = currSolution.name;
+            priorGuessesText.textContent = "Hit the spacebar to play again";
+            gameState = "pregame"
           } else {
             puzzleDisplayText.textContent = "Keep guessing ...";
             triesRemainingText.textContent = "Tries remaining = " + userTries
-            priorGuessesText.textContent = "Already guessed = " + priorGuesses;
+            priorGuessesText.textContent = priorGuesses;
           }
         }
       }
@@ -140,8 +152,8 @@ function attemptHandler(solution, state, guess) {
     if (solution[i] === guess) {
       if (state[i] === false) {
         state[i] = true;
-        guessSuccess = true;
       }
+      guessSuccess = true;
     }
   }
   if (guessSuccess === false) {
