@@ -30,11 +30,12 @@ var currSolution;
 document.onkeyup = function(event) {
   var userInputKeyCode = event.keyCode;
   if (userInputKeyCode != 32 && (userInputKeyCode < 65 || userInputKeyCode > 90)) {return}
+  if (gameState === "midgame" && userInputKeyCode === 32) {return}
+  if (gameState === "pregame" && userInputKeyCode >= 65 && userInputKeyCode <= 90) {return}
   if (userInputKeyCode === 32) {
     gameState = "pregame";
-    priorGuesses = "";
-    userTries = 12;
-    gameHandler(userInput);
+    console.log("37");
+    gameHandler();
   } else {
     userInput = String.fromCharCode(userInputKeyCode).toLowerCase();
     if (priorGuesses.length > 0 && priorGuesses.indexOf(userInput) >= 0) {return};
@@ -71,52 +72,41 @@ function solutionFormatter(solution) {
 
 function gameHandler(input) {
   if (gameState === "pregame") {
-      gameState = "midgame";
-      currSolution = dataKyans[Math.floor(Math.random() * dataKyans.length)]
-      puzzleSolution = stringToArray(currSolution.name);
-      puzzleSolution = solutionFormatter(puzzleSolution);
-      puzzleState = initState(puzzleSolution);
-      puzzleHintText.textContent = currSolution.hint;
-      puzzleStatusText.textContent = writePuzDisTxt(puzzleSolution, puzzleState);
-      puzzleDisplayText.textContent = "Start guessing letters now, we'll see if they're in the puzzle.";
-      userTries = 12;
-      triesRemainingText.textContent = "Tries remaining = " + userTries
+    priorGuesses = "";
+    userTries = 12;
+    currSolution = dataKyans[Math.floor(Math.random() * dataKyans.length)]
+    puzzleSolution = stringToArray(currSolution.name);
+    puzzleSolution = solutionFormatter(puzzleSolution);
+    puzzleState = initState(puzzleSolution);
+    puzzleHintText.textContent = currSolution.hint;
+    puzzleStatusText.textContent = writePuzDisTxt(puzzleSolution, puzzleState);
+    puzzleDisplayText.textContent = "Start guessing letters now, we'll see if they're in the puzzle.";
+    triesRemainingText.textContent = "Tries remaining = " + userTries
+    gameState = "midgame";
   } else if (gameState === "midgame") {
-      input = input.toLowerCase();
-      if (checkInputAZ(input)) {
-        // alert(priorGuesses.indexOf(input));
-        puzzleState = attemptHandler(puzzleSolution, puzzleState, input);
-        puzzleStatusText.textContent = writePuzDisTxt(puzzleSolution, puzzleState);
-        if (userTries <= 0) {
-          puzzleStatusText.textContent = "Oops, you've run out of tries ... Game over.";
-          puzzleDisplayText.textContent = "Correct answer = " + currSolution.name;
-          userLosses++;
-          triesRemainingText.textContent = "Wins = " + userWins + ", Losses = " + userLosses;
-          priorGuessesText.textContent = "Hit the spacebar to play again";
-          gameState = "pregame"
-        } else {
-          if (isWinner(puzzleSolution, puzzleState)) {
-            puzzleDisplayText.textContent = "Winner! Great job!";
-            puzzleStatusText.textContent = currSolution.name;
-            userWins++;
-            triesRemainingText.textContent = "Wins = " + userWins + ", Losses = " + userLosses;
-            priorGuessesText.textContent = "Hit the spacebar to play again";
-            gameState = "pregame"
-          } else {
-            puzzleDisplayText.textContent = "Keep guessing ...";
-            triesRemainingText.textContent = "Tries remaining = " + userTries
-            priorGuessesText.textContent = priorGuesses;
-          }
-        }
+    puzzleState = attemptHandler(puzzleSolution, puzzleState, input);
+    puzzleStatusText.textContent = writePuzDisTxt(puzzleSolution, puzzleState);
+    if (userTries <= 0) {
+      puzzleStatusText.textContent = "Oops, you've run out of tries ... Game over.";
+      puzzleDisplayText.textContent = "Correct answer = " + currSolution.name;
+      userLosses++;
+      triesRemainingText.textContent = "Wins = " + userWins + ", Losses = " + userLosses;
+      priorGuessesText.textContent = "Hit the spacebar to play again";
+      gameState = "pregame"
+    } else {
+      if (isWinner(puzzleSolution, puzzleState)) {
+        puzzleDisplayText.textContent = "Winner! Great job!";
+        puzzleStatusText.textContent = currSolution.name;
+        userWins++;
+        triesRemainingText.textContent = "Wins = " + userWins + ", Losses = " + userLosses;
+        priorGuessesText.textContent = "Hit the spacebar to play again";
+        gameState = "pregame"
+      } else {
+        puzzleDisplayText.textContent = "Keep guessing ...";
+        triesRemainingText.textContent = "Tries remaining = " + userTries
+        priorGuessesText.textContent = priorGuesses;
       }
-  }
-}
-
-function checkInputAZ(input) {
-  if (input >= "a" && input <= "z") {
-    return true;
-  } else {
-    return false;
+    }
   }
 }
 
