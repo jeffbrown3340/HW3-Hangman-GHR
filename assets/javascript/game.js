@@ -1,25 +1,28 @@
 var dataKyans = [
-  {"name":"Jennifer Lawrence", "hint":'Actress - Katness in "The Hunger Games"'},
-  {"name":"Ashley Judd", "hint":'Actress - "Kiss the Girls" and "Double Jeopardy"'},
-  {"name":"George Clooney", "hint":'Actor - Oceans Eleven and Gravity'},
-  {"name":"Johnny Depp", "hint":'Actor - Captain Jack Sparrow'},
+  {"name":"Jennifer Lawrence", "hint":'Actress<br>Katness in "The Hunger Games"'},
+  {"name":"Ashley Judd", "hint":'Actress<br>"Kiss the Girls"<br>"Double Jeopardy"'},
+  {"name":"George Clooney", "hint":'Actor<br>"Oceans Eleven"<br>"Gravity"'},
+  {"name":"Johnny Depp", "hint":'Actor<br>Captain Jack Sparrow'},
   {"name":"Mitch McConnell", "hint":'US Senate Majority Leader'},
-  {"name":"Mohammed Ali", "hint":'Athlete - aka "The Greatest", Cassius Clay'},
-  {"name":"Secretariat", "hint":'Triple Crown winner 1973, retired to stud at Claiborne Farm'},
-  {"name":"Jim Bowie", "hint":'Hero of the Alamo, inventor of the Bowie Knife'},
-  {"name":"Duncan Hines", "hint":'restaurant guide publisher, best known for cake mixes'},
-  {"name":"Hunter S Thompson", "hint":'Founder of Gonzo Journalism'},
-  {"name":"Diane Sawyer", "hint":'ABC Good Morning America host, television journalist'},
-  {"name":"Abraham Lincoln", "hint":'Sixteenth US President, his visage is on the penny'},
-  {"name":"Pat Riley", "hint":'Miami Heat former Head Coach and current Team President'}]
+  {"name":"Mohammed Ali", "hint":'Athlete<br>aka "The Greatest"<br>Cassius Clay'},
+  {"name":"Secretariat", "hint":'Triple Crown winner 1973<br>Retired to stud at Claiborne Farm'},
+  {"name":"Jim Bowie", "hint":'Hero of the Alamo<br>Inventor of the Bowie Knife'},
+  {"name":"Duncan Hines", "hint":'Restaurant Guide Publisher<br>Best known for cake mixes'},
+  {"name":"Hunter S Thompson", "hint":'Gonzo Journalist'},
+  {"name":"Diane Sawyer", "hint":'ABC Good Morning America Host<br>Female Television Journalist'},
+  {"name":"Abraham Lincoln", "hint":'Sixteenth US President<br>Profile is on the penny'},
+  {"name":"Pat Riley", "hint":'Miami Heat Team President<br>Former Head Coach'}]
+var gameHeadingText = document.getElementById("game-heading-text");
 var gameState = "pregame";
 var myNBSP = String.fromCharCode(160);
 var priorGuesses = "";
 var priorGuessesText = document.getElementById("prior-guesses-text");
+var priorSelectors = [];
 var puzzleHintText = document.getElementById("puzzle-hint-text");
 var puzzleDisplayText = document.getElementById("puzzle-state-text");
 var puzzleState = [];
 var puzzleStatusText = document.getElementById("puzzle-status-text");
+var selectorCounter = 0;
 var triesRemainingText = document.getElementById("tries-remaining-text");
 var userInput = "";
 var userLosses = 0;
@@ -34,7 +37,6 @@ document.onkeyup = function(event) {
   if (gameState === "pregame" && userInputKeyCode >= 65 && userInputKeyCode <= 90) {return}
   if (userInputKeyCode === 32) {
     gameState = "pregame";
-    console.log("37");
     gameHandler();
   } else {
     userInput = String.fromCharCode(userInputKeyCode).toLowerCase();
@@ -74,13 +76,26 @@ function gameHandler(input) {
   if (gameState === "pregame") {
     priorGuesses = "";
     userTries = 12;
-    currSolution = dataKyans[Math.floor(Math.random() * dataKyans.length)]
+    var loopBreaker = 0;
+    randomSelector = Math.floor(Math.random() * dataKyans.length);
+    while (priorSelectors.indexOf(randomSelector) >= 0) {
+      loopBreaker++;
+      randomSelector = Math.floor(Math.random() * dataKyans.length);
+      if (loopBreaker > 100) {
+        console.log("Help me! I'm out of control!");
+        return
+      }
+    }
+    currSolution = dataKyans[randomSelector];
+    priorSelectors.push(randomSelector)
     puzzleSolution = stringToArray(currSolution.name);
     puzzleSolution = solutionFormatter(puzzleSolution);
     puzzleState = initState(puzzleSolution);
-    puzzleHintText.textContent = currSolution.hint;
+    puzzleHintText.innerHTML = currSolution.hint;
+    selectorCounter++;
+    gameHeadingText.textContent = "Famous Kentuckian #" + selectorCounter + " (of 13)";
     puzzleStatusText.textContent = writePuzDisTxt(puzzleSolution, puzzleState);
-    puzzleDisplayText.textContent = "Start guessing letters now, we'll see if they're in the puzzle.";
+    puzzleDisplayText.innerHTML = "Start guessing letters now...<br>we'll see if they're in the puzzle.";
     triesRemainingText.textContent = "Tries remaining = " + userTries
     gameState = "midgame";
   } else if (gameState === "midgame") {
@@ -93,19 +108,21 @@ function gameHandler(input) {
       triesRemainingText.textContent = "Wins = " + userWins + ", Losses = " + userLosses;
       priorGuessesText.textContent = "Hit the spacebar to play again";
       gameState = "pregame"
+    } else if (isWinner(puzzleSolution, puzzleState)) {
+      puzzleDisplayText.textContent = "Winner! Great job!";
+      puzzleStatusText.textContent = currSolution.name;
+      userWins++;
+      triesRemainingText.textContent = "Wins = " + userWins + ", Losses = " + userLosses;
+      priorGuessesText.textContent = "Hit the spacebar to play again";
+      gameState = "pregame"
+    } else if (priorSelectors.length >= dataKyans.length) {
+      puzzleStatusText.innerHTML = "You've completed all<br> the puzzles<br>Game over.";
+      triesRemainingText.textContent = "Wins = " + userWins + ", Losses = " + userLosses;
+      priorGuessesText.textContent = "Refresh the page play again";
     } else {
-      if (isWinner(puzzleSolution, puzzleState)) {
-        puzzleDisplayText.textContent = "Winner! Great job!";
-        puzzleStatusText.textContent = currSolution.name;
-        userWins++;
-        triesRemainingText.textContent = "Wins = " + userWins + ", Losses = " + userLosses;
-        priorGuessesText.textContent = "Hit the spacebar to play again";
-        gameState = "pregame"
-      } else {
-        puzzleDisplayText.textContent = "Keep guessing ...";
-        triesRemainingText.textContent = "Tries remaining = " + userTries
-        priorGuessesText.textContent = priorGuesses;
-      }
+      puzzleDisplayText.textContent = "Keep guessing ...";
+      triesRemainingText.textContent = "Tries remaining = " + userTries
+      priorGuessesText.textContent = priorGuesses;
     }
   }
 }
